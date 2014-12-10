@@ -574,7 +574,7 @@ cdef class _Material:
 
 
     def mult_by_mass(self):
-        """This multiplies multiplies comp by mass and returns the resultant
+        """This multiplies comp by mass and returns the resultant
         nuctopic vector.
 
         Returns
@@ -588,6 +588,35 @@ cdef class _Material:
         cdef conv._MapIntDouble nucvec_proxy = conv.MapIntDouble()
         nucvec_proxy.map_ptr = new cpp_map[int, double](
                 self.mat_pointer.mult_by_mass())
+        return nucvec_proxy
+
+
+    def activity(self):
+        """This provides the activity of the comp of the material.
+
+        Returns
+	-------
+	nucvec : dict
+	    For a Material mat
+
+        """
+        cdef conv._MapIntDouble nucvec_proxy = conv.MapIntDouble()
+        nucvec_proxy.map_ptr = new cpp_map[int, double](
+                self.mat_pointer.activity())
+        return nucvec_proxy
+
+
+    def decay_heat(self):
+        """This provides the decay heat using the comp of the the Material.
+
+        Returns
+        -------
+        nucvec : dict
+            For a Material mat
+        """
+        cdef conv._MapIntDouble nucvec_proxy = conv.MapIntDouble()
+        nucvec_proxy.map_ptr = new cpp_map[int, double](
+                self.mat_pointer.decay_heat())
         return nucvec_proxy
 
 
@@ -1158,6 +1187,16 @@ cdef class _Material:
             intensities are in decays/s/atom material
         """
         return self.mat_pointer.photons(<cpp_bool> norm)
+
+    def decay(self, double t):
+        """decay(double t)
+        Decays a material for a time t, in seconds. Returns a new material.
+        """
+        cdef _Material pymat = Material()
+        pymat.mat_pointer[0] = self.mat_pointer.decay(t)
+        return pymat
+
+    
     #
     # Operator Overloads
     #
