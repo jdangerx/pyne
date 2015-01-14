@@ -97,6 +97,7 @@ class XSCache(MutableMapping):
     # Explicit overrides
     #
 
+    @profile
     def __getitem__(self, key):
         """Key lookup by via custom loading from the nuc_data database file."""
         if (key not in self._cache) and not isinstance(key, basestring):
