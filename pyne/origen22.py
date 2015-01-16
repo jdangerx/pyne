@@ -1435,7 +1435,6 @@ _xslib_computers = {
     'CF249_fiss_yield': lambda nuc, xscache: data.fpyield(982490000, nuc),
     }
 
-
 def _compute_xslib(nuc, key, lib, xscache):
     for field, data in lib.items():
         if field.startswith('_'):
@@ -1448,7 +1447,6 @@ def _compute_xslib(nuc, key, lib, xscache):
         data[key] = _xslib_computers[field](nuc, xscache)
 
 
-@profile
 def xslibs(nucs=NUCS, xscache=None, nlb=(201, 202, 203), verbose=False):
     """Generates a TAPE9 dictionary of cross section & fission product yield data
     for a set of nuclides.
@@ -1545,7 +1543,6 @@ def nlbs(t9):
     decay_nlb.sort()
     return tuple(decay_nlb), tuple(xsfpy_nlb)
 
-@profile
 def make_tape9(nucs, xscache=None, nlb=(201, 202, 203)):
     """Make a TAPE9 dict with data for a given list of nucs using data from
     a given data source.

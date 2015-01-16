@@ -323,6 +323,8 @@ class SimpleDataSource(DataSource):
         self.src_group_struct = np.array([14.0, 1.0, 2.53E-8, 0.0], dtype='float64')
 
     def _load_reaction(self, nuc, rx, temp=300.0):
+        if (nuc, rx) in self.rxcache:
+            return self.rxcache[nuc, rx]
         if rx not in self._rx_avail:
             return None
         cond = "nuc == {0}".format(nuc)
@@ -339,6 +341,29 @@ class SimpleDataSource(DataSource):
             else:
                 rxdata = np.array([fteen[0], fissn[0], therm[0]], dtype='float64')
         return rxdata
+
+    def load(self, temp=300):
+        with tb.openFile(nuc_data, 'r') as f:
+            simple_xs = f.root.neutron.simple_xs
+            fteen = {row["nuc"]: row for row in simple_xs.fourteen_MeV}
+            fissn = {row["nuc"]: row for row in simple_xs.fission_spectrum_ave}
+            therm = {row["nuc"]: row for row in simple_xs.thermal}
+            therm_maxwell = {row["nuc"]: row for row in simple_xs.thermal_maxwell_ave}
+
+        for nuc in fteen:
+            fteen_row = fteen[nuc]
+            fissn_row = fissn[nuc]
+            therm_row = therm.get(nuc)
+            if therm_row is None:
+                therm_row = therm_maxwell[nuc]
+            for rx in self._rx_avail:
+                sig = "sigma_" + self._rx_avail[rx]
+                self.rxcache[nuc, rx] = np.array([fteen_row[sig],
+                                                  fissn_row[sig],
+                                                  therm_row[sig]],
+                                                 dtype="float64")
+
+        self.fullyloaded = True
 
     def discretize(self, nuc, rx, temp=300.0, src_phi_g=None, dst_phi_g=None):
         """Discretizes the reaction channel from simple group structure to that
